@@ -27,7 +27,6 @@ namespace HeightmapGenerator
             string requestUrlTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/Polyline?points={0},{1},{0},{2}&samples={3}&key={4}";
             string key = "-- you need to provide a Bing API key --";
 
-            //string requestUrlTest = $"http://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={southLatitude},{eastLongitude},{northLatitude},{westLongitude}&rows={numSubdivisions}&cols={numSubdivisions}&key=AjfmHONLKchXMH6IL0JtaSrTNSJcjB_GJSfJkOLQEF7QYA_r-3er3Yn3v4SvK524";
             List<int> heights = new List<int>();
 
             int maxHeight = 0;
