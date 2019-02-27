@@ -13,11 +13,11 @@ namespace HeightmapGenerator
     {
         static void Main(string[] args)
         {
-            double mapWidthInMiles = 5.0;
+            double mapWidthInMiles = 6.0;
             double mapWidthInDegrees = mapWidthInMiles / 69;
 
-            double westLongitude = -78.450771;
-            double northLatitude = 40.019914; // bedford PA
+            double westLongitude = -77.478789;
+            double northLatitude = 39.823795;
 
             double eastLongitude = westLongitude + mapWidthInDegrees;
             double southLatitude = northLatitude - mapWidthInDegrees;
@@ -25,7 +25,7 @@ namespace HeightmapGenerator
             double distanceBetweenPonts = (northLatitude - southLatitude) / (numSubdivisions - 1);
             Console.WriteLine($"Distance Between Points is {distanceBetweenPonts.ToString()}.");
             string requestUrlTemplate = "http://dev.virtualearth.net/REST/v1/Elevation/Polyline?points={0},{1},{0},{2}&samples={3}&key={4}";
-            string key = "-- you need to provide a Bing API key --";
+            string key = "--api key--";
 
             List<int> heights = new List<int>();
 
@@ -34,7 +34,7 @@ namespace HeightmapGenerator
 
             for(var i = 0; i < numSubdivisions; i++)
             {
-                Console.WriteLine("---------------" + i + "-------------------------------");
+               // Console.WriteLine("---------------" + i + "-------------------------------");
                 double lat = southLatitude + (distanceBetweenPonts * i);
                 double long1 = westLongitude;
                 double long2 = eastLongitude;
@@ -60,21 +60,34 @@ namespace HeightmapGenerator
                             heights.Add(Convert.ToInt32(height));
                             if (height > maxHeight) maxHeight = height;
                             if (height < minHeight) minHeight = height;
-                            Console.Write(height + ",");
+                           // Console.Write(height + ",");
                         }
-                        Console.WriteLine($"Max height is {maxHeight}, min height is {minHeight}.");
-                        Console.WriteLine($"Height differnce is {maxHeight - minHeight}");
+
+                        if(i % 20 == 0)
+                        {
+                            Console.WriteLine($"Max: {maxHeight}, Min: {minHeight}. i: {i}. Diff: {maxHeight - minHeight}");
+                        }
                     }
                 }
             }
+
             Console.WriteLine($"heights has {heights.Count} members.");
 
-            CreateHeightmapFile(heights, numSubdivisions);
+            CreateHeightmapFile(heights, numSubdivisions, maxHeight, minHeight);
             
         }
 
-        public static void CreateHeightmapFile(List<int> heights, int width)
+        public static void CreateHeightmapFile(List<int> heights, int width, int maxHeight, int minHeight)
         {
+            int heightDifference = maxHeight - minHeight;
+            float scaleFactor = 1f;
+            //if the height difference is above 255 we have a problem. we need to fix this.
+            if(heightDifference > 255)
+            {
+                scaleFactor = (255/(float)heightDifference);
+            }
+
+
             Bitmap bmp = new Bitmap(width, width);
             for (int i = 0; i < width + 1; i++)
             {
@@ -83,7 +96,7 @@ namespace HeightmapGenerator
                     if (i < width && j < width)
                     {
                         int index = j + (width * i);
-                        int byteValue = heights[index];
+                        int byteValue = Convert.ToInt32(scaleFactor * (heights[index] - minHeight));
 
                         if (byteValue < 0)
                         {
@@ -96,7 +109,7 @@ namespace HeightmapGenerator
                     }
                 }
             }
-            bmp.Save(@"C:\git\graphics\terragen\generatedTerrain.png", ImageFormat.Png);
+            bmp.Save(@"C:\users\derek\desktop\terrain.png", ImageFormat.Png);
         }
     }   
 }
